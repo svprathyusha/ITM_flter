@@ -1,6 +1,4 @@
-function [ output ,ite2] = ITM_new( x)
-
-xo=x;
+function [ output ,ite1] = ITM_filter( x,output_type )
 
 n=length(x); %length of the image
 %% for stopping criteria conditions
@@ -9,16 +7,12 @@ e1=1;              % equation (34)
 e2= 2*n^0.5;       %equation (35)
 e3=(n-n^0.5)/2;    %equation(36)
 e4=n^0.5;          %euation (38)
-s4= 0; % for using in the equation (37)
+s4= -1; % for using in the equation (37)
 ite_times=0;
-ite2=0;
- 
-
-
-
+ite1=0;
 while(1)
     g=s4;
-    ite2=ite2+1;
+    ite1=ite1+1;
     ite_times= ite_times+1;
     %% Outline of the ITM algorithm:
     %step 1 : computing arithmetic mean
@@ -41,18 +35,18 @@ while(1)
     %t = 0.5*(dh+dl); %equation (10) 
    % t= std(x-u);  %second threshold( t2) %equation(11)
     t= mean(abs(x-u)); %third threshold( t3) % euqtion(12)
-    %truncating the values 
+    %truncating the values
     bh= u+t; % equation(3)
     bl=u-t;   % equation(3)
     xh_truncated=(x>bh); %finding higher values than mean and threshold
-       
-    nth=length(xh_truncated); %length of higher truncated values
+     nth=sum(xh_truncated); %length of higher truncated values
     x(xh_truncated)=bh; % replacing the higher values with u+t
     xl_truncated=(x<bl); %finding lower values than mean and threshold
-     ntl=length(xl_truncated); % length of lower truncated values
+    ntl=sum(xl_truncated); % length of lower truncated values
     x(xl_truncated)=bl;  % replacing the lower values with u+t
- 
+    
    
+    
     %% Section 2 -(C)Stopping criteria
    s1=abs(nh-nl); %equation 34
    s3= abs(nth-ntl); % equation 36
@@ -66,14 +60,19 @@ while(1)
 end 
 
 
-   xr=x>bl&x<bh;
-        if sum(xr)>(n/2) % to avoid unreliable mean
-           output= mean(x(xr)); %equation (5)
-        elseif sum(xr)>(n/4)
-            output=(mean(x(xr))+mean(x))/2;
+%% Iterative trunacted mean filter
+%itm1 filter output
+if (output_type==1)
+    output=mean(x); % equation (4)
+%itm2 filter output
+else
+    if (output_type==2)
+        % euation (5)
+        xr=x>bl&x<bh;
+        if sum(xr)>(n/4) % to avoid unreliable mean
+            output= mean(x(xr)); %equation (5)
         else
             output= mean(x); %equation(5)
         end
- 
-
-      
+    end
+    
